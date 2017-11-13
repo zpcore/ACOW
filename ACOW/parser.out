@@ -1,0 +1,335 @@
+Created by PLY version 3.10 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> expression
+Rule 1     expression -> expression AND expression
+Rule 2     expression -> NEG expression
+Rule 3     expression -> UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+Rule 4     expression -> GLOBAL LBRACK NUMBER RBRACK expression
+Rule 5     expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+Rule 6     expression -> LPAREN expression RPAREN
+Rule 7     expression -> ATOMIC
+
+Terminals, with rules where they appear
+
+AND                  : 1
+ATOMIC               : 7
+COMMA                : 3 5
+GLOBAL               : 4 5
+LBRACK               : 3 4 5
+LPAREN               : 6
+NEG                  : 2
+NUMBER               : 3 3 4 5 5
+RBRACK               : 3 4 5
+RPAREN               : 6
+UNTIL                : 3
+error                : 
+
+Nonterminals, with rules where they appear
+
+expression           : 1 1 2 3 4 5 6 0
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . expression
+    (1) expression -> . expression AND expression
+    (2) expression -> . NEG expression
+    (3) expression -> . UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (4) expression -> . GLOBAL LBRACK NUMBER RBRACK expression
+    (5) expression -> . GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (6) expression -> . LPAREN expression RPAREN
+    (7) expression -> . ATOMIC
+
+    NEG             shift and go to state 2
+    UNTIL           shift and go to state 3
+    GLOBAL          shift and go to state 4
+    LPAREN          shift and go to state 5
+    ATOMIC          shift and go to state 6
+
+    expression                     shift and go to state 1
+
+state 1
+
+    (0) S' -> expression .
+    (1) expression -> expression . AND expression
+
+    AND             shift and go to state 7
+
+
+state 2
+
+    (2) expression -> NEG . expression
+    (1) expression -> . expression AND expression
+    (2) expression -> . NEG expression
+    (3) expression -> . UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (4) expression -> . GLOBAL LBRACK NUMBER RBRACK expression
+    (5) expression -> . GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (6) expression -> . LPAREN expression RPAREN
+    (7) expression -> . ATOMIC
+
+    NEG             shift and go to state 2
+    UNTIL           shift and go to state 3
+    GLOBAL          shift and go to state 4
+    LPAREN          shift and go to state 5
+    ATOMIC          shift and go to state 6
+
+    expression                     shift and go to state 8
+
+state 3
+
+    (3) expression -> UNTIL . LBRACK NUMBER COMMA NUMBER RBRACK expression
+
+    LBRACK          shift and go to state 9
+
+
+state 4
+
+    (4) expression -> GLOBAL . LBRACK NUMBER RBRACK expression
+    (5) expression -> GLOBAL . LBRACK NUMBER COMMA NUMBER RBRACK expression
+
+    LBRACK          shift and go to state 10
+
+
+state 5
+
+    (6) expression -> LPAREN . expression RPAREN
+    (1) expression -> . expression AND expression
+    (2) expression -> . NEG expression
+    (3) expression -> . UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (4) expression -> . GLOBAL LBRACK NUMBER RBRACK expression
+    (5) expression -> . GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (6) expression -> . LPAREN expression RPAREN
+    (7) expression -> . ATOMIC
+
+    NEG             shift and go to state 2
+    UNTIL           shift and go to state 3
+    GLOBAL          shift and go to state 4
+    LPAREN          shift and go to state 5
+    ATOMIC          shift and go to state 6
+
+    expression                     shift and go to state 11
+
+state 6
+
+    (7) expression -> ATOMIC .
+
+    AND             reduce using rule 7 (expression -> ATOMIC .)
+    $end            reduce using rule 7 (expression -> ATOMIC .)
+    RPAREN          reduce using rule 7 (expression -> ATOMIC .)
+
+
+state 7
+
+    (1) expression -> expression AND . expression
+    (1) expression -> . expression AND expression
+    (2) expression -> . NEG expression
+    (3) expression -> . UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (4) expression -> . GLOBAL LBRACK NUMBER RBRACK expression
+    (5) expression -> . GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (6) expression -> . LPAREN expression RPAREN
+    (7) expression -> . ATOMIC
+
+    NEG             shift and go to state 2
+    UNTIL           shift and go to state 3
+    GLOBAL          shift and go to state 4
+    LPAREN          shift and go to state 5
+    ATOMIC          shift and go to state 6
+
+    expression                     shift and go to state 12
+
+state 8
+
+    (2) expression -> NEG expression .
+    (1) expression -> expression . AND expression
+
+    AND             reduce using rule 2 (expression -> NEG expression .)
+    $end            reduce using rule 2 (expression -> NEG expression .)
+    RPAREN          reduce using rule 2 (expression -> NEG expression .)
+
+  ! AND             [ shift and go to state 7 ]
+
+
+state 9
+
+    (3) expression -> UNTIL LBRACK . NUMBER COMMA NUMBER RBRACK expression
+
+    NUMBER          shift and go to state 13
+
+
+state 10
+
+    (4) expression -> GLOBAL LBRACK . NUMBER RBRACK expression
+    (5) expression -> GLOBAL LBRACK . NUMBER COMMA NUMBER RBRACK expression
+
+    NUMBER          shift and go to state 14
+
+
+state 11
+
+    (6) expression -> LPAREN expression . RPAREN
+    (1) expression -> expression . AND expression
+
+    RPAREN          shift and go to state 15
+    AND             shift and go to state 7
+
+
+state 12
+
+    (1) expression -> expression AND expression .
+    (1) expression -> expression . AND expression
+
+    AND             reduce using rule 1 (expression -> expression AND expression .)
+    $end            reduce using rule 1 (expression -> expression AND expression .)
+    RPAREN          reduce using rule 1 (expression -> expression AND expression .)
+
+  ! AND             [ shift and go to state 7 ]
+
+
+state 13
+
+    (3) expression -> UNTIL LBRACK NUMBER . COMMA NUMBER RBRACK expression
+
+    COMMA           shift and go to state 16
+
+
+state 14
+
+    (4) expression -> GLOBAL LBRACK NUMBER . RBRACK expression
+    (5) expression -> GLOBAL LBRACK NUMBER . COMMA NUMBER RBRACK expression
+
+    RBRACK          shift and go to state 17
+    COMMA           shift and go to state 18
+
+
+state 15
+
+    (6) expression -> LPAREN expression RPAREN .
+
+    AND             reduce using rule 6 (expression -> LPAREN expression RPAREN .)
+    $end            reduce using rule 6 (expression -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 6 (expression -> LPAREN expression RPAREN .)
+
+
+state 16
+
+    (3) expression -> UNTIL LBRACK NUMBER COMMA . NUMBER RBRACK expression
+
+    NUMBER          shift and go to state 19
+
+
+state 17
+
+    (4) expression -> GLOBAL LBRACK NUMBER RBRACK . expression
+    (1) expression -> . expression AND expression
+    (2) expression -> . NEG expression
+    (3) expression -> . UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (4) expression -> . GLOBAL LBRACK NUMBER RBRACK expression
+    (5) expression -> . GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (6) expression -> . LPAREN expression RPAREN
+    (7) expression -> . ATOMIC
+
+    NEG             shift and go to state 2
+    UNTIL           shift and go to state 3
+    GLOBAL          shift and go to state 4
+    LPAREN          shift and go to state 5
+    ATOMIC          shift and go to state 6
+
+    expression                     shift and go to state 20
+
+state 18
+
+    (5) expression -> GLOBAL LBRACK NUMBER COMMA . NUMBER RBRACK expression
+
+    NUMBER          shift and go to state 21
+
+
+state 19
+
+    (3) expression -> UNTIL LBRACK NUMBER COMMA NUMBER . RBRACK expression
+
+    RBRACK          shift and go to state 22
+
+
+state 20
+
+    (4) expression -> GLOBAL LBRACK NUMBER RBRACK expression .
+    (1) expression -> expression . AND expression
+
+    AND             reduce using rule 4 (expression -> GLOBAL LBRACK NUMBER RBRACK expression .)
+    $end            reduce using rule 4 (expression -> GLOBAL LBRACK NUMBER RBRACK expression .)
+    RPAREN          reduce using rule 4 (expression -> GLOBAL LBRACK NUMBER RBRACK expression .)
+
+  ! AND             [ shift and go to state 7 ]
+
+
+state 21
+
+    (5) expression -> GLOBAL LBRACK NUMBER COMMA NUMBER . RBRACK expression
+
+    RBRACK          shift and go to state 23
+
+
+state 22
+
+    (3) expression -> UNTIL LBRACK NUMBER COMMA NUMBER RBRACK . expression
+    (1) expression -> . expression AND expression
+    (2) expression -> . NEG expression
+    (3) expression -> . UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (4) expression -> . GLOBAL LBRACK NUMBER RBRACK expression
+    (5) expression -> . GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (6) expression -> . LPAREN expression RPAREN
+    (7) expression -> . ATOMIC
+
+    NEG             shift and go to state 2
+    UNTIL           shift and go to state 3
+    GLOBAL          shift and go to state 4
+    LPAREN          shift and go to state 5
+    ATOMIC          shift and go to state 6
+
+    expression                     shift and go to state 24
+
+state 23
+
+    (5) expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK . expression
+    (1) expression -> . expression AND expression
+    (2) expression -> . NEG expression
+    (3) expression -> . UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (4) expression -> . GLOBAL LBRACK NUMBER RBRACK expression
+    (5) expression -> . GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+    (6) expression -> . LPAREN expression RPAREN
+    (7) expression -> . ATOMIC
+
+    NEG             shift and go to state 2
+    UNTIL           shift and go to state 3
+    GLOBAL          shift and go to state 4
+    LPAREN          shift and go to state 5
+    ATOMIC          shift and go to state 6
+
+    expression                     shift and go to state 25
+
+state 24
+
+    (3) expression -> UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression .
+    (1) expression -> expression . AND expression
+
+    AND             reduce using rule 3 (expression -> UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression .)
+    $end            reduce using rule 3 (expression -> UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression .)
+    RPAREN          reduce using rule 3 (expression -> UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression .)
+
+  ! AND             [ shift and go to state 7 ]
+
+
+state 25
+
+    (5) expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression .
+    (1) expression -> expression . AND expression
+
+    AND             reduce using rule 5 (expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression .)
+    $end            reduce using rule 5 (expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression .)
+    RPAREN          reduce using rule 5 (expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression .)
+
+  ! AND             [ shift and go to state 7 ]
+

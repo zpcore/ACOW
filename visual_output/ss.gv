@@ -1,0 +1,22 @@
+// State Space Graph
+digraph {
+	s0 [color=green style=filled]
+	s1 [color=grey style=filled]
+	s2 [color=grey style=filled]
+	s3 [color=grey style=filled]
+	s4 [color=grey style=filled]
+	s5 [color=grey style=filled]
+	s6 [color=blue style=filled]
+	s0 -> s1
+	s0 -> s0
+	s1 -> s0
+	s1 -> s2
+	s1 -> s1
+	s1 -> s4
+	s2 -> s3
+	s3 -> s3
+	s3 -> s5
+	s4 -> s4
+	s5 -> s2
+	s5 -> s6
+}
