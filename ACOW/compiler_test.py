@@ -5,12 +5,12 @@ from MTLlex import lexer
 from MTLparse import parser
 
 data = '''
-!a0 & G[1,3]s0
+a1 U[1,2] !a0&G[1,3]a3
 '''
 print('MTL Formula:',data)
 
 # Test lex
-print('Lex Test:')
+print('\nLex Test:')
 lexer.input(data)
 for tok in lexer:
 	print(tok)
