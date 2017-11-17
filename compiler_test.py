@@ -1,8 +1,7 @@
-import ply.lex as lex
-import ply.yacc as yacc
-
-from MTLlex import lexer
-from MTLparse import parser
+'''
+# Test the compiler
+'''
+from ACOW import *
 
 data = '''
 a1 U[1,2] !a0&G[1,3]a3

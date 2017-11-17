@@ -5,9 +5,11 @@
 # Construct observer abstract syntax tree
 # ------------------------------------------------------------
 import ply.yacc as yacc
-from MTLlex import tokens
-import Observer as ob
+from .MTLlex import tokens
+from .Observer import *
 import sys
+
+__all__ = ['cnt2observer', 'parser']
 
 operator_cnt = 0
 cnt2observer={}
@@ -26,16 +28,15 @@ def p_MTL_operators(p):
 				| GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
 	'''
 	if p[1] == '!':
-		p[0] = ob.NEG(p[2])
-		record_operators(p[0])
+		p[0] = NEG(p[2])
 	elif len(p)>2 and p[2] == '&':
-	 	p[0] = ob.AND(p[1],p[3])
+	 	p[0] = AND(p[1],p[3])
 	elif p[1] == 'G' and len(p) == 6:
-		p[0] = ob.GLOBAL(p[5],ub=p[3])
+		p[0] = GLOBAL(p[5],ub=p[3])
 	elif p[1] == 'G' and len(p)==8:
-		p[0] = ob.GLOBAL(p[6],lb=p[3],ub=p[5])
+		p[0] = GLOBAL(p[6],lb=p[3],ub=p[5])
 	elif p[2] == 'U':
-		p[0] = ob.UNTIL(p[1],p[8],lb=p[4],ub=p[6])
+		p[0] = UNTIL(p[1],p[8],lb=p[4],ub=p[6])
 	else:
 		raise Exception('Syntax error in type! Cannot find matching format.')
 		sys.exit(0)
@@ -47,9 +48,9 @@ def p_paren_token(p):
 
 def p_atomic_token(p):
 	'''expression : ATOMIC'''
-	p[0] = ob.ATOM(p[1])
+	p[0] = ATOM(p[1])
 	record_operators(p[0])
-	print('IMPORT ATOMIC:{0}'.format(p[1]))
+	#print('IMPORT ATOMIC:{0}'.format(p[1]))
 
 precedence = (
 	('left', 'AND'),
@@ -65,4 +66,4 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-# TODO: optimize the AST
+# TODO: Optimize the AST (Build AST first and then optimize. Finally map the observer to AST)

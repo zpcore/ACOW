@@ -22,7 +22,7 @@ class automaton():
 		for states, variables in self.STATE.items():
 			cur_state = state(states)
 			cur_state.var = variables
-			self.state_map.update({states:cur_state}) #map the state name to the state object
+			self.state_map[states]=cur_state #map the state name to the state object
 
 		for states, next_state in self.DELTA.items():
 			# print(states)
