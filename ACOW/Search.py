@@ -20,7 +20,7 @@ class Search():
 		self.automaton = automaton
 		self.current_time = 0
 
-		self.test = True###########
+		# self.test = True###########
 
 	def backtrack(self):
 		for i in range(len(cnt2observer)):
@@ -28,10 +28,10 @@ class Search():
 			observer.recede_status()
 
 	def go_to_next_state(self,state):
-		if(self.current_time==3 and self.test):
-			self.backtrack()
-			self.test = False
-			self.current_time -= 1
+		# if(self.current_time==3 and self.test):
+		# 	self.backtrack()
+		# 	self.test = False
+		# 	self.current_time -= 1
 		logging.debug('----------- Time: %d, State: %s ----------',self.current_time,state)
 		for i in range(len(cnt2observer)):
 			observer = cnt2observer[i]

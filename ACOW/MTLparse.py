@@ -50,7 +50,6 @@ def p_atomic_token(p):
 	'''expression : ATOMIC'''
 	p[0] = ATOM(p[1])
 	record_operators(p[0])
-	#print('IMPORT ATOMIC:{0}'.format(p[1]))
 
 precedence = (
 	('left', 'AND'),

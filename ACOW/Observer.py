@@ -12,15 +12,14 @@ import logging, sys
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class Observer():
-	def __init__(self, ob1=None, ob2=None, name=None):
-		self.scq = SCQ(name=name+'_SCQ',size=20)#depth of the queue is 10
+	def __init__(self, ob1=None, ob2=None, name='Default'):
+		self.scq = SCQ(name=name+'_SCQ',size=50)#depth of the queue
 		self.input_1 = ob1
 		self.input_2 = ob2
 		self.rd_ptr_1 = 0
 		self.rd_ptr_2 = 0
 		self.status_stack = []
-		self.desired_time_stamp_1 = 0
-		self.desired_time_stamp_2 = 0
+		self.desired_time_stamp = 0
 		self.is_healthy = True
 
 	def write_result(self,data):
@@ -38,19 +37,20 @@ class Observer():
 	# record status before do any operations to the SCQ every time
 	def record_status(self):
 		if self.scq.wr_ptr == 0:#at the beginning
-			self.status_stack.append([0,0,0,True,0,0,[0,False]])
+			self.status_stack.append([0,0,0,True,0,[0,False]])
 		else:
 			self.status_stack.append([self.scq.wr_ptr, self.rd_ptr_1, self.rd_ptr_2, self.is_healthy,\
-				self.desired_time_stamp_1, self.desired_time_stamp_2, self.scq.queue[self.scq.wr_ptr-1]])
+				self.desired_time_stamp, self.scq.queue[self.scq.wr_ptr-1]])
 
 	# This method is used in backtracking
 	def recede_status(self):
-		self.scq.wr_ptr,self.rd_ptr_1,self.rd_ptr_2, self.is_healthy, self.desired_time_stamp_1,\
-		self.desired_time_stamp_2, pre_content = self.status_stack.pop()
+		self.scq.wr_ptr,self.rd_ptr_1,self.rd_ptr_2, self.is_healthy, self.desired_time_stamp,\
+		pre_content = self.status_stack.pop()
 		#print(self.scq.wr_ptr,self.rd_ptr_1,pre_content)
 		self.scq.force_modify(pre_content)
 
 ###########################################################
+
 class ATOM(Observer):
 	def __init__(self,name):
 		logging.debug('Initiate ATOMIC %s',name)
@@ -66,6 +66,61 @@ class ATOM(Observer):
 		logging.debug('%s %s return: %s',self.type, self.name, res)
 
 
+class NEG(Observer):
+	def __init__(self,ob1):
+		logging.debug('Initiate NEG Observer')
+		self.type = 'NEG'
+		super().__init__(ob1,name='!')
+
+	def run(self):
+		super().record_status()
+		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
+		while(not isEmpty):
+			res = [time_stamp,not verdict]
+			self.desired_time_stamp = time_stamp+1
+			super().write_result(res)
+			logging.debug('%s return: %s',self.type, res)
+			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
+			
+
+class AND(Observer):
+	def __init__(self,ob1,ob2):
+		logging.debug('Initiate AND Observer')
+		self.type = 'AND'
+		self.last_desired_time_stamp = 0
+		super().__init__(ob1,ob2,name='&')
+
+	def run(self):
+		super().record_status()
+		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
+		while(not isEmpty_1 or not isEmpty_2):
+			res = [-1,False]
+			if(not isEmpty_1 and not isEmpty_2):
+				if(verdict_1 and verdict_2):
+					res = [min(time_stamp_1,time_stamp_2),True]
+				elif(not verdict_1 and not verdict_2):
+					res = [max(time_stamp_1,time_stamp_2),False]
+				elif(verdict_1):
+					res = [time_stamp_2,False]
+				else:
+					res = [time_stamp_1,False]
+			elif(isEmpty_1):# q1 empty
+				if(not verdict_2):
+					res = [time_stamp_2,False]
+			else:# q2 empty
+				if(not verdict_1):
+					res = [time_stamp_1,False]
+			if(res[0]!=-1):
+				super().write_result(res)
+				self.desired_time_stamp = res[0]+1
+				logging.debug('%s return: %s',self.type, res)
+			else:
+				break;
+			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+			isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
+
+
 class GLOBAL(Observer):
 	def __init__(self,ob1,ub,lb=0):
 		logging.debug('Initiate GLOBAL Observer')
@@ -78,10 +133,9 @@ class GLOBAL(Observer):
 
 	def run(self):
 		super().record_status()	
-		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp_1)
+		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
 		while(not isEmpty):
-			#res = [0,False]
-			self.desired_time_stamp_1 = time_stamp+1
+			self.desired_time_stamp = time_stamp+1
 			if verdict and not self.verdict_pre:
 				self.m_up = time_stamp
 			if verdict:
@@ -94,8 +148,7 @@ class GLOBAL(Observer):
 				super().write_result(res)
 				logging.debug('%s return: %s',self.type, res)
 			self.verdict_pre = verdict
-			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp_1)
-
+			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
 
 
 class UNTIL(Observer):
@@ -104,36 +157,35 @@ class UNTIL(Observer):
 		self.type = 'UNTIL'
 		self.lb = lb
 		self.ub = ub
-		super().__init__(ob1,ob2)
-
-class NEG(Observer):
-	def __init__(self,ob1):
-		logging.debug('Initiate NEG Observer')
-		self.type = 'NEG'
-		super().__init__(ob1,name='NEG')
+		self.verdict_2_pre = True
+		self.m_down = 0
+		super().__init__(ob1,ob2,name='U')
 
 	def run(self):
-		super().record_status()
-		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp_1)
-		while(not isEmpty):
-			res = [time_stamp,not verdict]
-			self.desired_time_stamp_1 = time_stamp+1
-			super().write_result(res)
-			logging.debug('%s return: %s',self.type, res)
-			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp_1)
-			
-
-class AND(Observer):
-	def __init__(self,ob1,ob2):
-		logging.debug('Initiate AND Observer')
-		self.type = 'AND'
-		super().__init__(ob1,ob2)
-
+		super().record_status()	
+		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
+		while(not isEmpty_1 and not isEmpty_2):
+			res = [-1,False]
+			tau = min(time_stamp_1,time_stamp_2)
+			self.desired_time_stamp = tau + 1
+			if self.verdict_2_pre and not verdict_2:
+				self.m_down = tau
+			if verdict_2:
+				res = [tau-self.lb,True]
+			elif not verdict_1:
+				res = [tau-self.lb,False]
+			elif tau>=self.ub-self.lb+self.m_down:
+				res = [tau-self.ub,False]
+			if res[0]!=-1:
+				super().write_result(res)
+				logging.debug('%s return: %s',self.type, res)
+			self.verdict_2_pre = verdict_2
+			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+			isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
 
 ###########################################################
-"""
-SCQ: Shared Connection Queue
-"""
+#SCQ: Shared Connection Queue
 class SCQ():
 	# Content structure: ([0]:timestamp, [1]:verdict)
 	def __init__(self,name,size):
@@ -175,7 +227,4 @@ class SCQ():
 				rd_ptr -= 1
 		else:
 			time_stamp, verdict = self.queue[rd_ptr]
-		return isEmpty,time_stamp, verdict
-		
-
-
+		return isEmpty,time_stamp,verdict
