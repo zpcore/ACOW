@@ -34,7 +34,7 @@ def p_MTL_operators(p):
 	elif p[1] == 'G' and len(p) == 6:
 		p[0] = GLOBAL(p[5],ub=p[3])
 	elif p[1] == 'G' and len(p)==8:
-		p[0] = GLOBAL(p[6],lb=p[3],ub=p[5])
+		p[0] = GLOBAL(p[7],lb=p[3],ub=p[5])
 	elif p[2] == 'U':
 		p[0] = UNTIL(p[1],p[8],lb=p[4],ub=p[6])
 	else:

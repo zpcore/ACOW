@@ -7,6 +7,11 @@
 # ------------------------------------------------------------
 from .automaton import automaton
 from .MTLparse import *
+import logging, sys
+
+# Comment this line to disable debug info
+
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class Search():
 	def __init__(self, automaton, agent='DFS'):
@@ -15,15 +20,27 @@ class Search():
 		self.automaton = automaton
 		self.current_time = 0
 
+		self.test = True###########
+
+	def backtrack(self):
+		for i in range(len(cnt2observer)):
+			observer = cnt2observer[i]	
+			observer.recede_status()
+
 	def go_to_next_state(self,state):
-		print('-----------Time: {0}------------'.format(self.current_time))
+		if(self.current_time==3 and self.test):
+			self.backtrack()
+			self.test = False
+			self.current_time -= 1
+		logging.debug('----------- Time: %d, State: %s ----------',self.current_time,state)
 		for i in range(len(cnt2observer)):
 			observer = cnt2observer[i]
-			if(observer.type=='ATOMIC'):
+			if(observer.type=='ATOMIC'):				
 				observer.run(self.automaton.state_map[state].var,self.current_time)
 			else:
 				observer.run()
 		self.current_time += 1
+		logging.debug('')
 
 
 	def is_state_acceptable(state):
@@ -43,7 +60,7 @@ class Search():
 		for state in path:
 			self.go_to_next_state(state)
 
-	# 'DFS': depth first search
+	# 'DFS': Depth first search
 	def dfs():
 		pass
 
