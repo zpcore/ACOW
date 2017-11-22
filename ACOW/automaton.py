@@ -3,7 +3,15 @@ top level automaton class
 {'s0',{'a0':1,'a1':0,'a2':1,'a3':1}} #s0:1011
 """
 from graphviz import *
-from .state import state
+
+class state():
+	def __init__(self, name, var = {}):
+		self.name = name
+		self.next = set()
+		self.var = var
+
+	def __repr__(self):
+		return self.name
 
 class automaton():
 
@@ -25,8 +33,10 @@ class automaton():
 			self.state_map[states]=cur_state #map the state name to the state object
 
 		for states, next_state in self.DELTA.items():
-			# print(states)
-			self.state_map[states].next = next_state #for states, next_state in self.DELTA
+			self.state_map[states].next = [self.state_map[x] for x in next_state]
+			#print(self.state_map[states].next)
+			# for each_next_state in next_state:
+			# 	self.state_map[states].next.append = self.state_map[each_next_state]
 
 	def show(self):
 		dot = Digraph(comment='State Space Graph')

@@ -20,12 +20,11 @@ class Observer():
 		self.rd_ptr_2 = 0
 		self.status_stack = []
 		self.desired_time_stamp = 0
-		self.is_healthy = True
+		self.return_verdict = True
 
 	def write_result(self,data):
 		self.scq.add(data)
-		if data[1] == False:
-			self.is_healthy = False # Should I reset the status???
+		self.return_verdict = data[1]
 
 	def read_next(self,desired_time_stamp,observer_number=1):
 		assert observer_number in (1,2), 'Error: wrong oberver number to read.'
@@ -37,15 +36,15 @@ class Observer():
 	# record status before do any operations to the SCQ every time
 	def record_status(self):
 		if self.scq.wr_ptr == 0:#at the beginning
-			self.status_stack.append([0,0,0,True,0,[0,False]])
+			self.status_stack.append([0,0,0,0,[0,False]])
 		else:
-			self.status_stack.append([self.scq.wr_ptr, self.rd_ptr_1, self.rd_ptr_2, self.is_healthy,\
-				self.desired_time_stamp, self.scq.queue[self.scq.wr_ptr-1]])
+			self.status_stack.append([self.scq.wr_ptr, self.rd_ptr_1, self.rd_ptr_2,\
+				 self.desired_time_stamp, self.scq.queue[self.scq.wr_ptr-1]])
 
 	# This method is used in backtracking
 	def recede_status(self):
-		self.scq.wr_ptr,self.rd_ptr_1,self.rd_ptr_2, self.is_healthy, self.desired_time_stamp,\
-		pre_content = self.status_stack.pop()
+		self.scq.wr_ptr,self.rd_ptr_1,self.rd_ptr_2,\
+			 self.desired_time_stamp, pre_content = self.status_stack.pop()
 		#print(self.scq.wr_ptr,self.rd_ptr_1,pre_content)
 		self.scq.force_modify(pre_content)
 

@@ -7,12 +7,12 @@ def define_automaton():
 	a.DEST_STATE = 's6'
 	a.STATE = {
 	's0':{'v0':1,'v1':0,'v2':0,'v3':1},
-	's1':{'v0':0,'v1':0,'v2':0,'v3':1},
+	's1':{'v0':1,'v1':0,'v2':1,'v3':0},
 	's2':{'v0':0,'v1':1,'v2':0,'v3':1},
-	's3':{'v0':0,'v1':0,'v2':0,'v3':0},
-	's4':{'v0':0,'v1':0,'v2':1,'v3':1},
+	's3':{'v0':1,'v1':0,'v2':0,'v3':0},
+	's4':{'v0':1,'v1':0,'v2':1,'v3':1},
 	's5':{'v0':1,'v1':1,'v2':0,'v3':1},
-	's6':{'v0':0,'v1':0,'v2':1,'v3':0},
+	's6':{'v0':0,'v1':1,'v2':1,'v3':0},
 	}
 	a.DELTA = {
 	's0': {'s0','s1'},
@@ -30,11 +30,11 @@ def main():
 	a = define_automaton()
 	a.init()
 	#a.show()# show a .pdf figure of the state space model
-	MTL = 'v0&G[2]v3'
+	MTL = '!(!v0&!v1&!v2)'
 	top_node = parser.parse(MTL)
-	solution = Search(a,agent='DES')
+	solution = Search(a,agent='DFS')
 	#solution.run(['s0','s1','s4','s1','s2','s3','s5','s6'])
-	solution.run(['s0','s1','s2','s2','s3','s4','s5','s6'])
+	solution.run()
 
 if __name__ == "__main__":
 	main()
