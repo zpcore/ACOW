@@ -13,7 +13,7 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class Observer():
 	def __init__(self, ob1=None, ob2=None, name='Default'):
-		self.scq = SCQ(name=name+'_SCQ',size=50)#depth of the queue
+		self.scq = SCQ(name=name+'_SCQ',size=200)#depth of the queue
 		self.input_1 = ob1
 		self.input_2 = ob2
 		self.rd_ptr_1 = 0

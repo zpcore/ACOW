@@ -1,6 +1,5 @@
-from ACOW import *
-
-# User defined automaton
+# Farmer, goat, wolf, cabbage on a boat problem
+# f: farmer, c: cabbage, g: goat, w: wolf
 def define_automaton():
 	a = automaton()
 	a.INITIAL_STATE = 's0'
@@ -44,16 +43,4 @@ def define_automaton():
 	print(a)
 	return a
 
-
-def main():
-	a = define_automaton()
-	a.init()
-	a.show()# show a .pdf figure of the state space model
-	MTL = '!(g&c&!f)&!(g&w&!f)&!(!g&!c&f)&!(!g&!w&f)'
-	top_node = parser.parse(MTL)
-	solution = Search(a,agent='DFS')
-	#solution.run(['s0','s1','s4','s1','s2','s3','s5','s6'])
-	solution.run()
-
-if __name__ == "__main__":
-	main()
+MTL = '!(g&c&!f)&!(g&w&!f)&!(!g&!c&f)&!(!g&!w&f)'

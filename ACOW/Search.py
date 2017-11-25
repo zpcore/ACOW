@@ -31,7 +31,7 @@ class Search():
 		logging.debug('----------- Time: %d, State: %s ----------',self.current_time,state)
 		for i in range(len(cnt2observer)):
 			observer = cnt2observer[i]
-			if(observer.type=='ATOMIC'):				
+			if(observer.type=='ATOMIC'):
 				observer.run(state.var,self.current_time)
 			else:
 				observer.run()
@@ -43,10 +43,15 @@ class Search():
 		top = cnt2observer[len(cnt2observer)-1]
 		return top.return_verdict
 
-	def run(self,path=None):
+	def run(self,path=None,max_step=200):
 		if self.agent == 'DFS':
-			if(self.dfs(self.automaton.state_map[self.automaton.INITIAL_STATE],0)):
-				print('Find Feasible Track:',self.trace)
+			self.max_step = max_step
+			finish,reach_max_step = self.dfs(self.automaton.state_map[self.automaton.INITIAL_STATE],0)
+			if(finish):
+				if reach_max_step:
+					print('Reach Maximum Searching Step',max_step)
+				else:
+					print('Find Feasible Track:',self.trace)
 			else:
 				print('No Feasible Track Found.')
 		elif self.agent == 'SED':
@@ -60,25 +65,29 @@ class Search():
 			self.go_to_next_state(self.automaton.state_map[state])
 
 	# 'DFS': Depth first search
+	# Return : (meet stop criterion?),(reach max_step?)
 	def dfs(self,current_state,step_len):
+		if step_len == self.max_step:
+			return True,True
 		self.trace.append(current_state.name)
 		self.go_to_next_state(current_state)
 		if not self.is_state_acceptable():
 			self.backtrack()
 			del self.trace[-1]
-			return False
+			return False,False
 		elif current_state.name==self.automaton.DEST_STATE:
-			return True
+			return True,False
 		else:
 			step_len += 1
 			keys = [x for x in current_state.next]
 			shuffle(keys)
 			for state in keys:
-				if(self.dfs(state,step_len)):
-					return True
+				finish,reach_max_step = self.dfs(state,step_len)
+				if(finish):
+					return True,reach_max_step
 			self.backtrack()
 			del trace[-1]
-			return False
+			return False,False
 
 	# 'SED': Shortest edit distance
 	def sed():
