@@ -1,10 +1,7 @@
-from ACOW import *
-
-# User defined automaton
 def define_automaton():
 	a = automaton()
 	a.INITIAL_STATE = 's0'
-	a.DEST_STATE = 's6'
+	a.DEST_STATE = 's15'
 	a.STATE = {
 	's0':{'a0':0,'a1':0,'a2':0,'a3':0},
 	's1':{'a0':0,'a1':0,'a2':0,'a3':1},
@@ -45,15 +42,14 @@ def define_automaton():
 	return a
 
 
-def main():
-	a = define_automaton()
-	a.init()
-	#a.show()# show a .pdf figure of the state space model
-	MTL = 'G[5]!a0'
-	top_node = parser.parse(MTL)
-	solution = Search(a,agent='DFS_FA')
-	#solution.run(['s0','s1','s4','s1','s2','s3','s5','s6'])
-	solution.run()
+#####################
+a.INITIAL_STATE = 's0'
+a.DEST_STATE = 's6'
+MTL='G[5]!a0'
 
-if __name__ == "__main__":
-	main()
+
+
+
+
+
+

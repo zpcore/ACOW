@@ -38,6 +38,9 @@ class automaton():
 			# for each_next_state in next_state:
 			# 	self.state_map[states].next.append = self.state_map[each_next_state]
 
+		self.INITIAL_STATE = self.state_map[self.INITIAL_STATE]
+		self.DEST_STATE = self.state_map[self.DEST_STATE]
+
 	def show(self):
 		dot = Digraph(comment='State Space Graph')
 		for states in self.STATE:

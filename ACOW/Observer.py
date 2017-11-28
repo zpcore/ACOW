@@ -12,8 +12,8 @@ import logging, sys
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class Observer():
-	def __init__(self, ob1=None, ob2=None, name='Default'):
-		self.scq = SCQ(name=name+'_SCQ',size=200)#depth of the queue
+	def __init__(self, ob1=None, ob2=None, queue_size=200,name='Default'):
+		self.scq = SCQ(name=name+'_SCQ',size=queue_size)
 		self.input_1 = ob1
 		self.input_2 = ob2
 		self.rd_ptr_1 = 0
@@ -21,9 +21,11 @@ class Observer():
 		self.status_stack = []
 		self.desired_time_stamp = 0
 		self.return_verdict = True
+		self.has_output = True
 
 	def write_result(self,data):
 		self.scq.add(data)
+		self.has_output = True
 		self.return_verdict = data[1]
 
 	def read_next(self,desired_time_stamp,observer_number=1):
@@ -36,15 +38,15 @@ class Observer():
 	# record status before do any operations to the SCQ every time
 	def record_status(self):
 		if self.scq.wr_ptr == 0:#at the beginning
-			self.status_stack.append([0,0,0,0,[0,False]])
+			self.status_stack.append([0,0,0,0,True,[0,False]])
 		else:
 			self.status_stack.append([self.scq.wr_ptr, self.rd_ptr_1, self.rd_ptr_2,\
-				 self.desired_time_stamp, self.scq.queue[self.scq.wr_ptr-1]])
+				 self.desired_time_stamp, self.return_verdict, self.scq.queue[self.scq.wr_ptr-1]])
 
 	# This method is used in backtracking
 	def recede_status(self):
 		self.scq.wr_ptr,self.rd_ptr_1,self.rd_ptr_2,\
-			 self.desired_time_stamp, pre_content = self.status_stack.pop()
+			 self.desired_time_stamp, self.return_verdict,pre_content = self.status_stack.pop()
 		#print(self.scq.wr_ptr,self.rd_ptr_1,pre_content)
 		self.scq.force_modify(pre_content)
 
@@ -73,6 +75,7 @@ class NEG(Observer):
 
 	def run(self):
 		super().record_status()
+		self.has_output = False
 		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
 		while(not isEmpty):
 			res = [time_stamp,not verdict]
@@ -91,6 +94,7 @@ class AND(Observer):
 
 	def run(self):
 		super().record_status()
+		self.has_output = False
 		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
 		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
 		while(not isEmpty_1 or not isEmpty_2):
@@ -132,6 +136,7 @@ class GLOBAL(Observer):
 
 	def run(self):
 		super().record_status()	
+		self.has_output = False
 		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
 		while(not isEmpty):
 			self.desired_time_stamp = time_stamp+1
@@ -162,6 +167,7 @@ class UNTIL(Observer):
 
 	def run(self):
 		super().record_status()	
+		self.has_output = False
 		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
 		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
 		while(not isEmpty_1 and not isEmpty_2):

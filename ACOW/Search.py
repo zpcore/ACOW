@@ -11,11 +11,11 @@ from .MTLparse import *
 import logging, sys
 
 # Comment this line to disable debug info
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class Search():
 	def __init__(self, automaton, agent='DFS'):
-		assert agent in ('DFS','SED','DES'), 'Error: Agent not exist'
+		assert agent in ('DFS','DFS_FA','SED','DES'), 'Error: Agent not exist'
 		self.agent = agent
 		self.automaton = automaton
 		self.current_time = 0
@@ -41,12 +41,15 @@ class Search():
 
 	def is_state_acceptable(self):
 		top = cnt2observer[len(cnt2observer)-1]
-		return top.return_verdict
+		return top.return_verdict, top.has_output
 
 	def run(self,path=None,max_step=200):
-		if self.agent == 'DFS':
+		if self.agent == 'DFS' or self.agent == 'DFS_FA':
 			self.max_step = max_step
-			finish,reach_max_step = self.dfs(self.automaton.state_map[self.automaton.INITIAL_STATE],0)
+			if self.agent == 'DFS':
+				finish,reach_max_step = self.dfs(self.automaton.INITIAL_STATE,0)
+			else:
+				finish,reach_max_step = self.dfs_fa(self.automaton.INITIAL_STATE,0)
 			if(finish):
 				if reach_max_step:
 					print('Reach Maximum Searching Step',max_step)
@@ -65,17 +68,18 @@ class Search():
 			self.go_to_next_state(self.automaton.state_map[state])
 
 	# 'DFS': Depth first search
-	# Return : (meet stop criterion?),(reach max_step?)
+	# Return : (meet stop criterion?,reach max_step?)
 	def dfs(self,current_state,step_len):
 		if step_len == self.max_step:
 			return True,True
 		self.trace.append(current_state.name)
 		self.go_to_next_state(current_state)
-		if not self.is_state_acceptable():
+		if not self.is_state_acceptable()[0]:
 			self.backtrack()
 			del self.trace[-1]
 			return False,False
-		elif current_state.name==self.automaton.DEST_STATE:
+		#elif current_state.name==self.automaton.DEST_STATE:
+		elif current_state is self.automaton.DEST_STATE and self.is_state_acceptable()[1]:
 			return True,False
 		else:
 			step_len += 1
@@ -83,6 +87,36 @@ class Search():
 			shuffle(keys)
 			for state in keys:
 				finish,reach_max_step = self.dfs(state,step_len)
+				if(finish):
+					return True,reach_max_step
+			self.backtrack()
+			del trace[-1]
+			return False,False
+
+	# 'Force Approaching DFS': Use depth first search, but force it to consider enter final state first
+	# Return : (meet stop criterion?,reach max_step?)
+	def dfs_fa(self,current_state,step_len):
+		if step_len == self.max_step:
+			return True,True
+		self.trace.append(current_state.name)
+		self.go_to_next_state(current_state)
+		if not self.is_state_acceptable()[0]:
+			self.backtrack()
+			del self.trace[-1]
+			return False,False
+		#elif current_state.name==self.automaton.DEST_STATE:
+		elif current_state is self.automaton.DEST_STATE and self.is_state_acceptable()[1]:
+			return True,False
+		else:
+			step_len += 1
+			#remain_state = current_state.next
+			keys = [x for x in current_state.next if x is not self.automaton.DEST_STATE]
+			shuffle(keys)
+			if self.automaton.DEST_STATE in current_state.next:
+				keys = [self.automaton.DEST_STATE]+keys
+			print(keys)
+			for state in keys:
+				finish,reach_max_step = self.dfs_fa(state,step_len)
 				if(finish):
 					return True,reach_max_step
 			self.backtrack()
