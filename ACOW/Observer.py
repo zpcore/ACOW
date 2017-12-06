@@ -10,9 +10,9 @@ import logging, sys
 
 # Comment this line to disable debug info
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-
+#logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
 class Observer():
-	def __init__(self, ob1=None, ob2=None, queue_size=200,name='Default'):
+	def __init__(self, ob1=None, ob2=None, queue_size=2000,name='Default'):
 		self.scq = SCQ(name=name+'_SCQ',size=queue_size)
 		self.input_1 = ob1
 		self.input_2 = ob2

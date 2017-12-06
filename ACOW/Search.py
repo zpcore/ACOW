@@ -12,7 +12,7 @@ import logging, sys
 
 # Comment this line to disable debug info
 #logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-
+logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
 class Search():
 	def __init__(self, automaton, agent='DFS'):
 		assert agent in ('DFS','DFS_FA','SED','DES'), 'Error: Agent not exist'
@@ -109,12 +109,11 @@ class Search():
 			return True,False
 		else:
 			step_len += 1
-			#remain_state = current_state.next
 			keys = [x for x in current_state.next if x is not self.automaton.DEST_STATE]
 			shuffle(keys)
 			if self.automaton.DEST_STATE in current_state.next:
 				keys = [self.automaton.DEST_STATE]+keys
-			print(keys)
+			#print(keys)
 			for state in keys:
 				finish,reach_max_step = self.dfs_fa(state,step_len)
 				if(finish):
