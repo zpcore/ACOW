@@ -45,9 +45,9 @@ class automaton():
 		dot = Digraph(comment='State Space Graph')
 		for states in self.STATE:
 			color = 'grey'
-			if states==self.INITIAL_STATE:
+			if states==self.INITIAL_STATE.name:
 				color = 'green' # initial state color
-			elif states==self.DEST_STATE:
+			elif states==self.DEST_STATE.name:
 				color = 'blue' # end state color
 			dot.node(states,color=color,style='filled')
 		
