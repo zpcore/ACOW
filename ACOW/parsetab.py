@@ -5,9 +5,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'leftANDleftGLOBALUNTILleftNEGleftLPARENRPARENATOMICLBRACKRBRACKNUMBER COMMA LPAREN RPAREN LBRACK RBRACK AND NEG ATOMIC GLOBAL UNTIL\n\texpression \t: expression AND expression\n\t\t\t\t| NEG expression\n\t\t\t\t| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression\n\t\t\t\t| GLOBAL LBRACK NUMBER RBRACK expression\n\t\t\t\t| GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression\n\texpression : LPAREN expression RPARENexpression : ATOMIC'
+_lr_signature = 'leftANDleftGLOBALUNTILleftNEGleftLPARENRPARENATOMICLBRACKRBRACKNUMBER COMMA LPAREN RPAREN LBRACK RBRACK AND NEG ATOMIC GLOBAL UNTIL\n\texpression \t: expression AND expression\n\t\t\t\t| NEG expression\n\t\t\t\t| GLOBAL LBRACK NUMBER RBRACK expression\n\t\t\t\t| GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression\n\t\t\t\t| expression UNTIL LBRACK NUMBER RBRACK expression\n\t\t\t\t| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression\t\t\t\t\n\texpression : LPAREN expression RPARENexpression : ATOMIC'
     
-_lr_action_items = {'NEG':([0,2,4,6,16,22,23,],[2,2,2,2,2,2,2,]),'GLOBAL':([0,2,4,6,16,22,23,],[3,3,3,3,3,3,3,]),'LPAREN':([0,2,4,6,16,22,23,],[4,4,4,4,4,4,4,]),'ATOMIC':([0,2,4,6,16,22,23,],[5,5,5,5,5,5,5,]),'$end':([1,5,8,11,14,19,24,25,],[0,-7,-2,-1,-6,-4,-5,-3,]),'AND':([1,5,8,10,11,14,19,24,25,],[6,-7,-2,6,-1,-6,-4,-5,-3,]),'UNTIL':([1,5,8,10,11,14,19,24,25,],[7,-7,-2,7,7,-6,-4,-5,-3,]),'LBRACK':([3,7,],[9,12,]),'RPAREN':([5,8,10,11,14,19,24,25,],[-7,-2,14,-1,-6,-4,-5,-3,]),'NUMBER':([9,12,17,18,],[13,15,20,21,]),'RBRACK':([13,20,21,],[16,22,23,]),'COMMA':([13,15,],[17,18,]),}
+_lr_action_items = {'NEG':([0,2,4,6,16,18,24,25,],[2,2,2,2,2,2,2,2,]),'GLOBAL':([0,2,4,6,16,18,24,25,],[3,3,3,3,3,3,3,3,]),'LPAREN':([0,2,4,6,16,18,24,25,],[4,4,4,4,4,4,4,4,]),'ATOMIC':([0,2,4,6,16,18,24,25,],[5,5,5,5,5,5,5,5,]),'$end':([1,5,8,11,14,20,22,26,27,],[0,-8,-2,-1,-7,-3,-5,-4,-6,]),'AND':([1,5,8,10,11,14,20,22,26,27,],[6,-8,-2,6,-1,-7,-3,-5,-4,-6,]),'UNTIL':([1,5,8,10,11,14,20,22,26,27,],[7,-8,-2,7,7,-7,-3,-5,-4,-6,]),'LBRACK':([3,7,],[9,12,]),'RPAREN':([5,8,10,11,14,20,22,26,27,],[-8,-2,14,-1,-7,-3,-5,-4,-6,]),'NUMBER':([9,12,17,19,],[13,15,21,23,]),'RBRACK':([13,15,21,23,],[16,18,24,25,]),'COMMA':([13,15,],[17,19,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'expression':([0,2,4,6,16,22,23,],[1,8,10,11,19,24,25,]),}
+_lr_goto_items = {'expression':([0,2,4,6,16,18,24,25,],[1,8,10,11,20,22,26,27,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -26,11 +26,12 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> expression","S'",1,None,None,None),
-  ('expression -> expression AND expression','expression',3,'p_MTL_operators','MTLparse.py',22),
-  ('expression -> NEG expression','expression',2,'p_MTL_operators','MTLparse.py',23),
-  ('expression -> expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',8,'p_MTL_operators','MTLparse.py',24),
-  ('expression -> GLOBAL LBRACK NUMBER RBRACK expression','expression',5,'p_MTL_operators','MTLparse.py',25),
-  ('expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',7,'p_MTL_operators','MTLparse.py',26),
-  ('expression -> LPAREN expression RPAREN','expression',3,'p_paren_token','MTLparse.py',46),
-  ('expression -> ATOMIC','expression',1,'p_atomic_token','MTLparse.py',50),
+  ('expression -> expression AND expression','expression',3,'p_MTL_operators','MTLparse.py',24),
+  ('expression -> NEG expression','expression',2,'p_MTL_operators','MTLparse.py',25),
+  ('expression -> GLOBAL LBRACK NUMBER RBRACK expression','expression',5,'p_MTL_operators','MTLparse.py',26),
+  ('expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',7,'p_MTL_operators','MTLparse.py',27),
+  ('expression -> expression UNTIL LBRACK NUMBER RBRACK expression','expression',6,'p_MTL_operators','MTLparse.py',28),
+  ('expression -> expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',8,'p_MTL_operators','MTLparse.py',29),
+  ('expression -> LPAREN expression RPAREN','expression',3,'p_paren_token','MTLparse.py',49),
+  ('expression -> ATOMIC','expression',1,'p_atomic_token','MTLparse.py',53),
 ]

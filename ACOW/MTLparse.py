@@ -23,9 +23,10 @@ def p_MTL_operators(p):
 	'''
 	expression 	: expression AND expression
 				| NEG expression
-				| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
 				| GLOBAL LBRACK NUMBER RBRACK expression
 				| GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+				| expression UNTIL LBRACK NUMBER RBRACK expression
+				| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression				
 	'''
 	if p[1] == '!':
 		p[0] = NEG(p[2])
@@ -35,7 +36,9 @@ def p_MTL_operators(p):
 		p[0] = GLOBAL(p[5],ub=p[3])
 	elif p[1] == 'G' and len(p)==8:
 		p[0] = GLOBAL(p[7],lb=p[3],ub=p[5])
-	elif p[2] == 'U':
+	elif p[2] == 'U' and len(p)==7:
+		p[0] = UNTIL(p[1],p[6],ub=p[4])
+	elif p[2] == 'U' and len(p)==9:
 		p[0] = UNTIL(p[1],p[8],lb=p[4],ub=p[6])
 	else:
 		raise Exception('Syntax error in type! Cannot find matching format.')

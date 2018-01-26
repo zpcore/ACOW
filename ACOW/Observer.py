@@ -8,16 +8,15 @@
 # ------------------------------------------------------------
 import logging, sys
 
-# Comment this line to disable debug info
+# use level=logging.DEBUG to enable debug info
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 #logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
+
 class Observer():
 	def __init__(self, ob1=None, ob2=None, queue_size=2000,name='Default'):
 		self.scq = SCQ(name=name+'_SCQ',size=queue_size)
-		self.input_1 = ob1
-		self.input_2 = ob2
-		self.rd_ptr_1 = 0
-		self.rd_ptr_2 = 0
+		self.input_1, self.input_2 = ob1, ob2
+		self.rd_ptr_1, self.rd_ptr_2 = 0, 0
 		self.status_stack = []
 		self.desired_time_stamp = 0
 		self.return_verdict = True
@@ -37,17 +36,14 @@ class Observer():
 
 	# record status before do any operations to the SCQ every time
 	def record_status(self):
-		if self.scq.wr_ptr == 0:#at the beginning
-			self.status_stack.append([0,0,0,0,True,[0,False]])
-		else:
-			self.status_stack.append([self.scq.wr_ptr, self.rd_ptr_1, self.rd_ptr_2,\
-				 self.desired_time_stamp, self.return_verdict, self.scq.queue[self.scq.wr_ptr-1]])
+		queue_addr = 0 if self.scq.wr_ptr == 0 else self.scq.wr_ptr-1
+		self.status_stack.append([self.scq.wr_ptr, self.rd_ptr_1, self.rd_ptr_2,\
+			self.desired_time_stamp, self.return_verdict, self.scq.queue[queue_addr]])
 
 	# This method is used in backtracking
 	def recede_status(self):
 		self.scq.wr_ptr,self.rd_ptr_1,self.rd_ptr_2,\
 			 self.desired_time_stamp, self.return_verdict,pre_content = self.status_stack.pop()
-		#print(self.scq.wr_ptr,self.rd_ptr_1,pre_content)
 		self.scq.force_modify(pre_content)
 
 ###########################################################
@@ -61,11 +57,11 @@ class ATOM(Observer):
 		super().__init__(name=name)
 
 	def run(self,var,time):
-		super().record_status()
+		super().record_status()	
 		res = [time,False] if var[self.name]==0 else [time,True]
 		super().write_result(res)
 		logging.debug('%s %s return: %s',self.type, self.name, res)
-
+		
 
 class NEG(Observer):
 	def __init__(self,ob1):
@@ -128,14 +124,22 @@ class GLOBAL(Observer):
 	def __init__(self,ob1,ub,lb=0):
 		logging.debug('Initiate GLOBAL Observer')
 		self.type = 'GLOBAL'
-		self.lb = lb
-		self.ub = ub
+		self.lb, self.ub = lb, ub
 		self.m_up = 0
 		self.verdict_pre = False
+		self.inner_status_stack = []
 		super().__init__(ob1,name='G')
 
+	def record_status(self):
+		super().record_status()
+		self.inner_status_stack.append([self.m_up, self.verdict_pre])
+
+	def recede_status(self):
+		super().recede_status()
+		self.m_up, self.verdict_pre = self.inner_status_stack.pop()
+
 	def run(self):
-		super().record_status()	
+		self.record_status()		
 		self.has_output = False
 		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
 		while(not isEmpty):
@@ -154,19 +158,26 @@ class GLOBAL(Observer):
 			self.verdict_pre = verdict
 			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
 
-
 class UNTIL(Observer):
 	def __init__(self,ob1,ob2,ub,lb=0):
 		logging.debug('Initiate UNTIL Observer')
 		self.type = 'UNTIL'
-		self.lb = lb
-		self.ub = ub
+		self.lb, self.ub = lb, ub
 		self.verdict_2_pre = True
 		self.m_down = 0
+		self.inner_status_stack = []
 		super().__init__(ob1,ob2,name='U')
+	
+	def record_status(self):
+		super().record_status()
+		self.inner_status_stack.append([self.m_down, self.verdict_2_pre])
+
+	def recede_status(self):
+		super().recede_status()
+		self.m_down, self.verdict_2_pre = self.inner_status_stack.pop()
 
 	def run(self):
-		super().record_status()	
+		self.record_status()	
 		self.has_output = False
 		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
 		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
@@ -200,7 +211,6 @@ class SCQ():
 		self.queue = [ [0,False] for y in range(size)] # revise the queue from list to array to speed up
 		
 	def add(self,data):
-		#print('add operation:',self.name)
 		# push data into the SCQ
 		if self.wr_ptr ==0:
 			self.queue[0] = data

@@ -24,11 +24,11 @@ def define_automaton():
 def main():
 	a = define_automaton()
 	a.init()
-	a.show()# show a .pdf figure of the state space model
-	MTL = 'G[2]a0'
+	#a.show()# show a .pdf figure of the state space model
+	MTL = 'a1 U[2] a0'
 	top_node = parser.parse(MTL)
-	solution = Search(a,agent='DFS_FA')
-	#solution.run(['s0','s1','s4','s1','s2','s3','s5','s6'])
+	solution = Search(a,agent='DFS')
+	#solution.run(['s3'])
 	solution.run(max_step=2000)
 
 if __name__ == "__main__":

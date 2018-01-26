@@ -10,7 +10,7 @@ from .automaton import automaton
 from .MTLparse import *
 import logging, sys
 
-# Comment this line to disable debug info
+# use level=logging.DEBUG to enable debug info
 #logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
 class Search():
@@ -36,7 +36,7 @@ class Search():
 			else:
 				observer.run()
 		self.current_time += 1
-		logging.debug('')
+		logging.debug('\n')
 
 
 	def is_state_acceptable(self):
@@ -90,7 +90,7 @@ class Search():
 				if(finish):
 					return True,reach_max_step
 			self.backtrack()
-			del trace[-1]
+			del self.trace[-1]
 			return False,False
 
 	# 'Force Approaching DFS': Use depth first search, but force it to consider enter final state first
@@ -119,7 +119,7 @@ class Search():
 				if(finish):
 					return True,reach_max_step
 			self.backtrack()
-			del trace[-1]
+			del self.trace[-1]
 			return False,False
 
 	# 'SED': Shortest edit distance
