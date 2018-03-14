@@ -5,9 +5,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'leftANDleftGLOBALUNTILleftNEGleftLPARENRPARENATOMICLBRACKRBRACKNUMBER COMMA LPAREN RPAREN LBRACK RBRACK AND NEG ATOMIC GLOBAL UNTIL\n\texpression \t: expression AND expression\n\t\t\t\t| NEG expression\n\t\t\t\t| GLOBAL LBRACK NUMBER RBRACK expression\n\t\t\t\t| GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression\n\t\t\t\t| expression UNTIL LBRACK NUMBER RBRACK expression\n\t\t\t\t| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression\t\t\t\t\n\texpression : LPAREN expression RPARENexpression : ATOMIC'
+_lr_signature = 'leftANDORleftGLOBALFUTUREUNTILWEAK_UNTILleftNEGleftLPARENRPARENATOMICLBRACKRBRACKNUMBER COMMA LPAREN RPAREN LBRACK RBRACK AND OR NEG ATOMIC GLOBAL UNTIL WEAK_UNTIL FUTURE\n\texpression \t: expression AND expression\n\t\t\t\t| expression OR expression\n\t\t\t\t| NEG expression\n\t\t\t\t| GLOBAL LBRACK NUMBER RBRACK expression\n\t\t\t\t| GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression\n\t\t\t\t| FUTURE LBRACK NUMBER RBRACK expression\n\t\t\t\t| FUTURE LBRACK NUMBER COMMA NUMBER RBRACK expression\n\t\t\t\t| expression UNTIL LBRACK NUMBER RBRACK expression\n\t\t\t\t| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression\n\t\t\t\t| expression WEAK_UNTIL LBRACK NUMBER RBRACK expression\n\t\t\t\t| expression WEAK_UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression\t\t\t\n\texpression : LPAREN expression RPARENexpression : ATOMIC'
     
-_lr_action_items = {'NEG':([0,2,4,6,16,18,24,25,],[2,2,2,2,2,2,2,2,]),'GLOBAL':([0,2,4,6,16,18,24,25,],[3,3,3,3,3,3,3,3,]),'LPAREN':([0,2,4,6,16,18,24,25,],[4,4,4,4,4,4,4,4,]),'ATOMIC':([0,2,4,6,16,18,24,25,],[5,5,5,5,5,5,5,5,]),'$end':([1,5,8,11,14,20,22,26,27,],[0,-8,-2,-1,-7,-3,-5,-4,-6,]),'AND':([1,5,8,10,11,14,20,22,26,27,],[6,-8,-2,6,-1,-7,-3,-5,-4,-6,]),'UNTIL':([1,5,8,10,11,14,20,22,26,27,],[7,-8,-2,7,7,-7,-3,-5,-4,-6,]),'LBRACK':([3,7,],[9,12,]),'RPAREN':([5,8,10,11,14,20,22,26,27,],[-8,-2,14,-1,-7,-3,-5,-4,-6,]),'NUMBER':([9,12,17,19,],[13,15,21,23,]),'RBRACK':([13,15,21,23,],[16,18,24,25,]),'COMMA':([13,15,],[17,19,]),}
+_lr_action_items = {'NEG':([0,2,5,7,8,24,26,28,30,40,41,42,43,],[2,2,2,2,2,2,2,2,2,2,2,2,2,]),'GLOBAL':([0,2,5,7,8,24,26,28,30,40,41,42,43,],[3,3,3,3,3,3,3,3,3,3,3,3,3,]),'FUTURE':([0,2,5,7,8,24,26,28,30,40,41,42,43,],[4,4,4,4,4,4,4,4,4,4,4,4,4,]),'LPAREN':([0,2,5,7,8,24,26,28,30,40,41,42,43,],[5,5,5,5,5,5,5,5,5,5,5,5,5,]),'ATOMIC':([0,2,5,7,8,24,26,28,30,40,41,42,43,],[6,6,6,6,6,6,6,6,6,6,6,6,6,]),'$end':([1,6,11,15,16,21,32,34,36,38,44,45,46,47,],[0,-13,-3,-1,-2,-12,-4,-6,-8,-10,-5,-7,-9,-11,]),'AND':([1,6,11,14,15,16,21,32,34,36,38,44,45,46,47,],[7,-13,-3,7,-1,-2,-12,-4,-6,-8,-10,-5,-7,-9,-11,]),'OR':([1,6,11,14,15,16,21,32,34,36,38,44,45,46,47,],[8,-13,-3,8,-1,-2,-12,-4,-6,-8,-10,-5,-7,-9,-11,]),'UNTIL':([1,6,11,14,15,16,21,32,34,36,38,44,45,46,47,],[9,-13,-3,9,9,9,-12,-4,-6,-8,-10,-5,-7,-9,-11,]),'WEAK_UNTIL':([1,6,11,14,15,16,21,32,34,36,38,44,45,46,47,],[10,-13,-3,10,10,10,-12,-4,-6,-8,-10,-5,-7,-9,-11,]),'LBRACK':([3,4,9,10,],[12,13,17,18,]),'RPAREN':([6,11,14,15,16,21,32,34,36,38,44,45,46,47,],[-13,-3,21,-1,-2,-12,-4,-6,-8,-10,-5,-7,-9,-11,]),'NUMBER':([12,13,17,18,25,27,29,31,],[19,20,22,23,33,35,37,39,]),'RBRACK':([19,20,22,23,33,35,37,39,],[24,26,28,30,40,41,42,43,]),'COMMA':([19,20,22,23,],[25,27,29,31,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'expression':([0,2,4,6,16,18,24,25,],[1,8,10,11,20,22,26,27,]),}
+_lr_goto_items = {'expression':([0,2,5,7,8,24,26,28,30,40,41,42,43,],[1,11,14,15,16,32,34,36,38,44,45,46,47,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,11 +27,16 @@ del _lr_goto_items
 _lr_productions = [
   ("S' -> expression","S'",1,None,None,None),
   ('expression -> expression AND expression','expression',3,'p_MTL_operators','MTLparse.py',24),
-  ('expression -> NEG expression','expression',2,'p_MTL_operators','MTLparse.py',25),
-  ('expression -> GLOBAL LBRACK NUMBER RBRACK expression','expression',5,'p_MTL_operators','MTLparse.py',26),
-  ('expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',7,'p_MTL_operators','MTLparse.py',27),
-  ('expression -> expression UNTIL LBRACK NUMBER RBRACK expression','expression',6,'p_MTL_operators','MTLparse.py',28),
-  ('expression -> expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',8,'p_MTL_operators','MTLparse.py',29),
-  ('expression -> LPAREN expression RPAREN','expression',3,'p_paren_token','MTLparse.py',49),
-  ('expression -> ATOMIC','expression',1,'p_atomic_token','MTLparse.py',53),
+  ('expression -> expression OR expression','expression',3,'p_MTL_operators','MTLparse.py',25),
+  ('expression -> NEG expression','expression',2,'p_MTL_operators','MTLparse.py',26),
+  ('expression -> GLOBAL LBRACK NUMBER RBRACK expression','expression',5,'p_MTL_operators','MTLparse.py',27),
+  ('expression -> GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',7,'p_MTL_operators','MTLparse.py',28),
+  ('expression -> FUTURE LBRACK NUMBER RBRACK expression','expression',5,'p_MTL_operators','MTLparse.py',29),
+  ('expression -> FUTURE LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',7,'p_MTL_operators','MTLparse.py',30),
+  ('expression -> expression UNTIL LBRACK NUMBER RBRACK expression','expression',6,'p_MTL_operators','MTLparse.py',31),
+  ('expression -> expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',8,'p_MTL_operators','MTLparse.py',32),
+  ('expression -> expression WEAK_UNTIL LBRACK NUMBER RBRACK expression','expression',6,'p_MTL_operators','MTLparse.py',33),
+  ('expression -> expression WEAK_UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression','expression',8,'p_MTL_operators','MTLparse.py',34),
+  ('expression -> LPAREN expression RPAREN','expression',3,'p_paren_token','MTLparse.py',64),
+  ('expression -> ATOMIC','expression',1,'p_atomic_token','MTLparse.py',68),
 ]

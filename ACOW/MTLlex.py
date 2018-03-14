@@ -10,6 +10,8 @@ import ply.lex as lex
 reserved = {
 	'G' : 'GLOBAL',
 	'U' : 'UNTIL',
+	'W' : 'WEAK_UNTIL',
+	'F' : 'FUTURE',
 	# '!' : 'NOT',
 	# '&' : 'AND',
 }
@@ -23,6 +25,7 @@ tokens = [
 	'LBRACK',
 	'RBRACK',
 	'AND',
+	'OR',
 	'NEG',
 	'ATOMIC'#atomic
         ]+ list(reserved.values())
@@ -32,6 +35,7 @@ tokens = [
 # t_GLOBAL 		= r'G'
 # t_UNTIL		= r'U'
 t_AND			= r'\&'
+t_OR			= r'\|'
 t_NEG			= r'\!'
 #t_ATOMIC		= r'([A-Za-z])\w*'
 t_COMMA			= r','

@@ -22,24 +22,39 @@ def record_operators(ob):
 def p_MTL_operators(p):
 	'''
 	expression 	: expression AND expression
+				| expression OR expression
 				| NEG expression
 				| GLOBAL LBRACK NUMBER RBRACK expression
 				| GLOBAL LBRACK NUMBER COMMA NUMBER RBRACK expression
+				| FUTURE LBRACK NUMBER RBRACK expression
+				| FUTURE LBRACK NUMBER COMMA NUMBER RBRACK expression
 				| expression UNTIL LBRACK NUMBER RBRACK expression
-				| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression				
+				| expression UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression
+				| expression WEAK_UNTIL LBRACK NUMBER RBRACK expression
+				| expression WEAK_UNTIL LBRACK NUMBER COMMA NUMBER RBRACK expression			
 	'''
 	if p[1] == '!':
 		p[0] = NEG(p[2])
 	elif len(p)>2 and p[2] == '&':
 	 	p[0] = AND(p[1],p[3])
+	elif len(p)>2 and p[2] == '|':
+	 	p[0] = OR(p[1],p[3])
 	elif p[1] == 'G' and len(p) == 6:
 		p[0] = GLOBAL(p[5],ub=p[3])
 	elif p[1] == 'G' and len(p)==8:
 		p[0] = GLOBAL(p[7],lb=p[3],ub=p[5])
+	elif p[1] == 'F' and len(p) == 6:
+		p[0] = FUTURE(p[5],ub=p[3])
+	elif p[1] == 'F' and len(p)==8:
+		p[0] = FUTURE(p[7],lb=p[3],ub=p[5])
 	elif p[2] == 'U' and len(p)==7:
 		p[0] = UNTIL(p[1],p[6],ub=p[4])
 	elif p[2] == 'U' and len(p)==9:
 		p[0] = UNTIL(p[1],p[8],lb=p[4],ub=p[6])
+	elif p[2] == 'W' and len(p)==7:
+		p[0] = WEAK_UNTIL(p[1],p[6],ub=p[4])
+	elif p[2] == 'W' and len(p)==9:
+		p[0] = WEAK_UNTIL(p[1],p[8],lb=p[4],ub=p[6])
 	else:
 		raise Exception('Syntax error in type! Cannot find matching format.')
 		sys.exit(0)
@@ -55,8 +70,8 @@ def p_atomic_token(p):
 	record_operators(p[0])
 
 precedence = (
-	('left', 'AND'),
-	('left', 'GLOBAL', 'UNTIL'),	
+	('left', 'AND', 'OR'),
+	('left', 'GLOBAL', 'FUTURE', 'UNTIL','WEAK_UNTIL'),	
 	('left', 'NEG'),
 	('left', 'LPAREN', 'RPAREN','ATOMIC','LBRACK','RBRACK'),
 )

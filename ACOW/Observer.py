@@ -79,7 +79,7 @@ class NEG(Observer):
 			super().write_result(res)
 			logging.debug('%s return: %s',self.type, res)
 			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
-			
+
 
 class AND(Observer):
 	def __init__(self,ob1,ob2):
@@ -119,6 +119,43 @@ class AND(Observer):
 			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
 			isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
 
+class OR(Observer):
+	def __init__(self,ob1,ob2):
+		logging.debug('Initiate OR Observer')
+		self.type = 'OR'
+		self.last_desired_time_stamp = 0
+		super().__init__(ob1,ob2,name='|')
+
+	def run(self):
+		super().record_status()
+		self.has_output = False
+		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
+		while(not isEmpty_1 or not isEmpty_2):
+			res = [-1,False]
+			if(not isEmpty_1 and not isEmpty_2):
+				if(verdict_1 or verdict_2):
+					res = [max(time_stamp_1,time_stamp_2),True]
+				elif(not verdict_1 and not verdict_2):
+					res = [min(time_stamp_1,time_stamp_2),False]
+				elif(verdict_1):
+					res = [time_stamp_1,True]
+				else:
+					res = [time_stamp_2,True]
+			elif(isEmpty_1):# q1 empty
+				if(verdict_2):
+					res = [time_stamp_2,True]
+			else:# q2 empty
+				if(verdict_1):
+					res = [time_stamp_1,True]
+			if(res[0]!=-1):
+				super().write_result(res)
+				self.desired_time_stamp = res[0]+1
+				logging.debug('%s return: %s',self.type, res)
+			else:
+				break;
+			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+			isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
 
 class GLOBAL(Observer):
 	def __init__(self,ob1,ub,lb=0):
@@ -126,26 +163,27 @@ class GLOBAL(Observer):
 		self.type = 'GLOBAL'
 		self.lb, self.ub = lb, ub
 		self.m_up = 0
-		self.verdict_pre = False
+		self.pre = (-1,False) # must init as -1
 		self.inner_status_stack = []
 		super().__init__(ob1,name='G')
 
 	def record_status(self):
 		super().record_status()
-		self.inner_status_stack.append([self.m_up, self.verdict_pre])
+		self.inner_status_stack.append([self.m_up, self.pre])
 
 	def recede_status(self):
 		super().recede_status()
-		self.m_up, self.verdict_pre = self.inner_status_stack.pop()
+		self.m_up, self.pre = self.inner_status_stack.pop()
 
 	def run(self):
 		self.record_status()		
 		self.has_output = False
 		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
+		pre_time_stamp, pre_verdict = self.pre
 		while(not isEmpty):
-			self.desired_time_stamp = time_stamp+1
-			if verdict and not self.verdict_pre:
-				self.m_up = time_stamp
+			self.desired_time_stamp = time_stamp + 1
+			if verdict and not pre_verdict:
+				self.m_up = pre_time_stamp + 1
 			if verdict:
 				if time_stamp-self.m_up >= self.ub-self.lb:
 					res = [time_stamp-self.ub,True]
@@ -155,7 +193,46 @@ class GLOBAL(Observer):
 				res = [time_stamp-self.lb,False]
 				super().write_result(res)
 				logging.debug('%s return: %s',self.type, res)
-			self.verdict_pre = verdict
+			self.pre = (time_stamp, verdict)
+			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
+
+class FUTURE(Observer):
+	def __init__(self,ob1,ub,lb=0):
+		logging.debug('Initiate FUTURE Observer')
+		self.type = 'FUTURE'
+		self.lb, self.ub = lb, ub
+		self.m_down = 0
+		self.pre = (-1,True)
+		self.inner_status_stack = []
+		super().__init__(ob1,name='F')
+
+	def record_status(self):
+		super().record_status()
+		self.inner_status_stack.append([self.m_down, self.pre])
+
+	def recede_status(self):
+		super().recede_status()
+		self.m_down, self.pre = self.inner_status_stack.pop()
+
+	def run(self):
+		self.record_status()		
+		self.has_output = False
+		isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
+		pre_time_stamp, pre_verdict = self.pre
+		while(not isEmpty):
+			self.desired_time_stamp = time_stamp + 1
+			if not verdict and pre_verdict:
+				self.m_down = pre_time_stamp + 1
+			if not verdict:
+				if time_stamp-self.m_down >= self.ub-self.lb:
+					res = [time_stamp-self.ub,False]
+					super().write_result(res)
+					logging.debug('%s return: %s',self.type, res)
+			elif time_stamp-self.lb >= 0:
+				res = [time_stamp-self.lb,True]
+				super().write_result(res)
+				logging.debug('%s return: %s',self.type, res)
+			self.pre = (time_stamp, verdict)
 			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
 
 class UNTIL(Observer):
@@ -163,30 +240,31 @@ class UNTIL(Observer):
 		logging.debug('Initiate UNTIL Observer')
 		self.type = 'UNTIL'
 		self.lb, self.ub = lb, ub
-		self.verdict_2_pre = True
+		self.pre = (-1,True)
 		self.m_down = 0
 		self.inner_status_stack = []
 		super().__init__(ob1,ob2,name='U')
 	
 	def record_status(self):
 		super().record_status()
-		self.inner_status_stack.append([self.m_down, self.verdict_2_pre])
+		self.inner_status_stack.append([self.m_down, self.pre])
 
 	def recede_status(self):
 		super().recede_status()
-		self.m_down, self.verdict_2_pre = self.inner_status_stack.pop()
+		self.m_down, self.pre = self.inner_status_stack.pop()
 
 	def run(self):
 		self.record_status()	
 		self.has_output = False
 		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
 		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
+		pre_time_stamp_2, pre_verdict_2 = self.pre
 		while(not isEmpty_1 and not isEmpty_2):
 			res = [-1,False]
 			tau = min(time_stamp_1,time_stamp_2)
 			self.desired_time_stamp = tau + 1
-			if self.verdict_2_pre and not verdict_2:
-				self.m_down = tau
+			if pre_verdict_2 and not verdict_2:
+				self.m_down = pre_time_stamp_2 + 1
 			if verdict_2:
 				res = [tau-self.lb,True]
 			elif not verdict_1:
@@ -196,7 +274,50 @@ class UNTIL(Observer):
 			if res[0]!=-1:
 				super().write_result(res)
 				logging.debug('%s return: %s',self.type, res)
-			self.verdict_2_pre = verdict_2
+			self.pre = (time_stamp_2, verdict_2)
+			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+			isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
+
+class WEAK_UNTIL(Observer):
+	def __init__(self,ob1,ob2,ub,lb=0):
+		logging.debug('Initiate WEAK UNTIL Observer')
+		self.type = 'WEAK_UNTIL'
+		self.lb, self.ub = lb, ub
+		self.pre = (-1,True)
+		self.m_down = 0
+		self.inner_status_stack = []
+		super().__init__(ob1,ob2,name='W')
+	
+	def record_status(self):
+		super().record_status()
+		self.inner_status_stack.append([self.m_down, self.pre])
+
+	def recede_status(self):
+		super().recede_status()
+		self.m_down, self.pre = self.inner_status_stack.pop()
+
+	def run(self):
+		self.record_status()	
+		self.has_output = False
+		isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
+		isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
+		pre_time_stamp_2, pre_verdict_2 = self.pre
+		while(not isEmpty_1 and not isEmpty_2):
+			res = [-1,False]
+			tau = min(time_stamp_1,time_stamp_2)
+			self.desired_time_stamp = tau + 1
+			if pre_verdict_2 and not verdict_2:
+				self.m_down = pre_time_stamp_2 + 1
+			if verdict_2:
+				res = [tau-self.lb,True]
+			elif not verdict_1:
+				res = [tau-self.lb,False]
+			elif tau>=self.ub-self.lb+self.m_down:
+				res = [tau-self.ub,True] # The only difference from until
+			if res[0]!=-1:
+				super().write_result(res)
+				logging.debug('%s return: %s',self.type, res)
+			self.pre = (time_stamp_2, verdict_2)
 			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
 			isEmpty_2, time_stamp_2, verdict_2 = super().read_next(self.desired_time_stamp,2)
 
