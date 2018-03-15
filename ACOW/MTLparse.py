@@ -2,7 +2,7 @@
 # MTLparse.py
 #
 # Parser for MTL formula.
-# Construct observer abstract syntax tree
+# Construct observer abstract syntax tree and remove the duplicate branch
 # ------------------------------------------------------------
 import ply.yacc as yacc
 from .MTLlex import tokens
