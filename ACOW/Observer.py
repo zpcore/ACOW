@@ -192,9 +192,9 @@ class GLOBAL(Observer):
 			if verdict and not pre_verdict:
 				self.m_up = pre_time_stamp + 1
 			if verdict:
-				if time_stamp-self.m_up >= self.ub-self.lb:
+				if time_stamp-self.m_up >= self.ub-self.lb and time_stamp-self.ub >= 0:
 					res = [time_stamp-self.ub,True]
-					super().write_result(res)
+					super().write_result(res)	
 					logging.debug('%s return: %s',self.type, res)
 			elif time_stamp-self.lb >= 0:
 				res = [time_stamp-self.lb,False]
@@ -232,7 +232,7 @@ class FUTURE(Observer):
 			if not verdict and pre_verdict:
 				self.m_down = pre_time_stamp + 1
 			if not verdict:
-				if time_stamp-self.m_down >= self.ub-self.lb:
+				if time_stamp-self.m_down >= self.ub-self.lb and time_stamp-self.ub >= 0:
 					res = [time_stamp-self.ub,False]
 					super().write_result(res)
 					logging.debug('%s return: %s',self.type, res)

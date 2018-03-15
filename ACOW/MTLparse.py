@@ -83,7 +83,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-# TODO: Optimize the AST (Build AST first and then optimize. Finally map the observer to AST)
+# Optimize the AST (Build AST first and then optimize. Finally map the observer to AST)
 def optimize():
 	# Map inorder traverse to observer node, use '(' and ')' to represent boundry
 	def inorder(root,m):
