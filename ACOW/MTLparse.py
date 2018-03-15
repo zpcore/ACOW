@@ -84,3 +84,61 @@ def p_error(p):
 parser = yacc.yacc()
 
 # TODO: Optimize the AST (Build AST first and then optimize. Finally map the observer to AST)
+def optimize():
+	# Map inorder traverse to observer node, use '(' and ')' to represent boundry
+	def inorder(root,m):
+		if(root==None):
+			return []
+		link = ['(']
+		link.extend(inorder(root.input_1,m))
+		link.extend([root.name])
+		link.extend(inorder(root.input_2,m))
+		link.append(')')
+		tup = tuple(link)
+		if(tup in m):
+			# find left of right branch of pre node
+			if(root.parent.input_1==root):
+				root.parent.input_1 = m[tup]
+			else:
+				root.parent.input_2 = m[tup]
+		else:
+			m[tup] = root
+		return link
+
+	# inorder traverse from the top node
+	top = cnt2observer[len(cnt2observer)-1]
+	inorder(top,{})
+	return sort_node()
+
+###############################################################
+# Sort the processing node sequence, the sequence is stored in stack
+def sort_node():
+	top = cnt2observer[len(cnt2observer)-1]
+	# collect used node from the tree
+	def checkTree(root, graph):
+		if(root==None):
+			return
+		checkTree(root.input_1, graph);
+		graph.add(root)
+		checkTree(root.input_2, graph);
+
+	graph=set()
+	checkTree(top,graph)
+
+	def topologicalSortUtil(root, visited, stack):
+		if(root!=None and not visited[root]):
+			visited[root] = True
+			[topologicalSortUtil(i,visited,stack) for i in(root.input_1, root.input_2)]
+			stack.insert(0,root)
+
+	def topologicalSort(root, graph):
+		visited = {}
+		for node in graph:
+			visited[node]=False 
+		stack = []
+		[topologicalSortUtil(node,visited,stack) for node in graph]
+		stack.reverse()
+		return stack
+
+	stack = topologicalSort(top,graph)
+	return stack

@@ -25,9 +25,10 @@ def main():
 	a = define_automaton()
 	a.init()
 	#a.show()# show a .pdf figure of the state space model
-	MTL = 'F[1](!G[1]a0)'
+	MTL = 'G[1]a0&(G[2]a0)'
 	top_node = parser.parse(MTL)
-	solution = Search(a,agent='DES')
+	cnt2observer = MTLparse.optimize() # comment this line if you don't want to optimze the AST
+	solution = Search(a,cnt2observer,agent='DES')
 	solution.run(['s2','s2','s2','s0'])
 
 if __name__ == "__main__":

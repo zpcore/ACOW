@@ -14,23 +14,24 @@ import logging, sys
 #logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
 class Search():
-	def __init__(self, automaton, agent='DFS'):
+	def __init__(self, automaton, observer_seq, agent='DFS'):
 		assert agent in ('DFS','DFS_FA','SED','DES'), 'Error: Agent not exist'
 		self.agent = agent
 		self.automaton = automaton
+		self.observer_seq = observer_seq
 		self.current_time = 0
 		self.trace = []
 
 	def backtrack(self):
 		self.current_time -= 1
-		for i in range(len(cnt2observer)):
-			observer = cnt2observer[i]	
+		for i in range(len(self.observer_seq)):
+			observer = self.observer_seq[i]	
 			observer.recede_status()
 
 	def go_to_next_state(self,state):
 		logging.debug('----------- Time: %d, State: %s ----------',self.current_time,state)
-		for i in range(len(cnt2observer)):
-			observer = cnt2observer[i]
+		for i in range(len(self.observer_seq)):
+			observer = self.observer_seq[i]
 			if(observer.type=='ATOMIC'):
 				observer.run(state.var,self.current_time)
 			else:
@@ -40,7 +41,7 @@ class Search():
 
 
 	def is_state_acceptable(self):
-		top = cnt2observer[len(cnt2observer)-1]
+		top = self.observer_seq[len(self.observer_seq)-1]
 		return top.return_verdict, top.has_output
 
 	def run(self,path=None,max_step=200):

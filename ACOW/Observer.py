@@ -15,12 +15,14 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 class Observer():
 	def __init__(self, ob1=None, ob2=None, queue_size=2000,name='Default'):
 		self.scq = SCQ(name=name+'_SCQ',size=queue_size)
+		self.name = name
 		self.input_1, self.input_2 = ob1, ob2
 		self.rd_ptr_1, self.rd_ptr_2 = 0, 0
 		self.status_stack = []
 		self.desired_time_stamp = 0
 		self.return_verdict = True
 		self.has_output = True
+		self.parent = None # This attribute is used for AST optimization
 
 	def write_result(self,data):
 		self.scq.add(data)
@@ -51,10 +53,9 @@ class Observer():
 class ATOM(Observer):
 	def __init__(self,name):
 		logging.debug('Initiate ATOMIC %s',name)
+		super().__init__(name=name)
 		self.type = 'ATOMIC'
 		self.name= name
-		# feed data use self.name as the key
-		super().__init__(name=name)
 
 	def run(self,var,time):
 		super().record_status()	
@@ -66,8 +67,9 @@ class ATOM(Observer):
 class NEG(Observer):
 	def __init__(self,ob1):
 		logging.debug('Initiate NEG Observer')
-		self.type = 'NEG'
 		super().__init__(ob1,name='!')
+		self.type = 'NEG'
+		self.input_1.parent = self
 
 	def run(self):
 		super().record_status()
@@ -84,9 +86,11 @@ class NEG(Observer):
 class AND(Observer):
 	def __init__(self,ob1,ob2):
 		logging.debug('Initiate AND Observer')
+		super().__init__(ob1,ob2,name='&')
 		self.type = 'AND'
 		self.last_desired_time_stamp = 0
-		super().__init__(ob1,ob2,name='&')
+		self.input_1.parent = self
+		self.input_2.parent = self
 
 	def run(self):
 		super().record_status()
@@ -122,9 +126,11 @@ class AND(Observer):
 class OR(Observer):
 	def __init__(self,ob1,ob2):
 		logging.debug('Initiate OR Observer')
+		super().__init__(ob1,ob2,name='|')
 		self.type = 'OR'
 		self.last_desired_time_stamp = 0
-		super().__init__(ob1,ob2,name='|')
+		self.input_1.parent = self
+		self.input_2.parent = self
 
 	def run(self):
 		super().record_status()
@@ -160,12 +166,13 @@ class OR(Observer):
 class GLOBAL(Observer):
 	def __init__(self,ob1,ub,lb=0):
 		logging.debug('Initiate GLOBAL Observer')
+		super().__init__(ob1,name='G'+str(lb)+','+str(ub))
 		self.type = 'GLOBAL'
 		self.lb, self.ub = lb, ub
 		self.m_up = 0
 		self.pre = (-1,False) # must init as -1
 		self.inner_status_stack = []
-		super().__init__(ob1,name='G')
+		self.input_1.parent = self
 
 	def record_status(self):
 		super().record_status()
@@ -199,12 +206,13 @@ class GLOBAL(Observer):
 class FUTURE(Observer):
 	def __init__(self,ob1,ub,lb=0):
 		logging.debug('Initiate FUTURE Observer')
+		super().__init__(ob1,name='F'+str(lb)+','+str(ub))
 		self.type = 'FUTURE'
 		self.lb, self.ub = lb, ub
 		self.m_down = 0
 		self.pre = (-1,True)
 		self.inner_status_stack = []
-		super().__init__(ob1,name='F')
+		self.input_1.parent = self
 
 	def record_status(self):
 		super().record_status()
@@ -238,12 +246,15 @@ class FUTURE(Observer):
 class UNTIL(Observer):
 	def __init__(self,ob1,ob2,ub,lb=0):
 		logging.debug('Initiate UNTIL Observer')
+		super().__init__(ob1,ob2,name='U'+str(lb)+','+str(ub))
 		self.type = 'UNTIL'
 		self.lb, self.ub = lb, ub
 		self.pre = (-1,True)
 		self.m_down = 0
 		self.inner_status_stack = []
-		super().__init__(ob1,ob2,name='U')
+		self.input_1.parent = self
+		self.input_2.parent = self
+		
 	
 	def record_status(self):
 		super().record_status()
@@ -281,12 +292,14 @@ class UNTIL(Observer):
 class WEAK_UNTIL(Observer):
 	def __init__(self,ob1,ob2,ub,lb=0):
 		logging.debug('Initiate WEAK UNTIL Observer')
+		super().__init__(ob1,ob2,name='W'+str(lb)+','+str(ub))
 		self.type = 'WEAK_UNTIL'
 		self.lb, self.ub = lb, ub
 		self.pre = (-1,True)
 		self.m_down = 0
 		self.inner_status_stack = []
-		super().__init__(ob1,ob2,name='W')
+		self.input_1.parent = self
+		self.input_2.parent = self
 	
 	def record_status(self):
 		super().record_status()
