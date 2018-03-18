@@ -282,7 +282,7 @@ class UNTIL(Observer):
 				res = [tau-self.lb,False]
 			elif tau>=self.ub-self.lb+self.m_down:
 				res = [tau-self.ub,False]
-			if res[0]!=-1:
+			if res[0]>=0:
 				super().write_result(res)
 				logging.debug('%s return: %s',self.type, res)
 			self.pre = (time_stamp_2, verdict_2)
@@ -327,7 +327,7 @@ class WEAK_UNTIL(Observer):
 				res = [tau-self.lb,False]
 			elif tau>=self.ub-self.lb+self.m_down:
 				res = [tau-self.ub,True] # The only difference from until
-			if res[0]!=-1:
+			if res[0]>=0:
 				super().write_result(res)
 				logging.debug('%s return: %s',self.type, res)
 			self.pre = (time_stamp_2, verdict_2)
