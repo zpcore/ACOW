@@ -251,6 +251,7 @@ class UNTIL(Observer):
 		self.lb, self.ub = lb, ub
 		self.pre = (-1,True)
 		self.m_down = 0
+		self.preResult = 0#time stamp of previous result
 		self.inner_status_stack = []
 		self.input_1.parent = self
 		self.input_2.parent = self
@@ -258,11 +259,11 @@ class UNTIL(Observer):
 	
 	def record_status(self):
 		super().record_status()
-		self.inner_status_stack.append([self.m_down, self.pre])
+		self.inner_status_stack.append([self.m_down, self.pre, self.preResult])
 
 	def recede_status(self):
 		super().recede_status()
-		self.m_down, self.pre = self.inner_status_stack.pop()
+		self.m_down, self.pre, self.preResult = self.inner_status_stack.pop()
 
 	def run(self):
 		self.record_status()	
@@ -282,8 +283,9 @@ class UNTIL(Observer):
 				res = [tau-self.lb,False]
 			elif tau>=self.ub-self.lb+self.m_down:
 				res = [tau-self.ub,False]
-			if res[0]>=0:
+			if res[0]>=self.preResult:
 				super().write_result(res)
+				self.preResult = res[0]+1
 				logging.debug('%s return: %s',self.type, res)
 			self.pre = (time_stamp_2, verdict_2)
 			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
@@ -296,6 +298,7 @@ class WEAK_UNTIL(Observer):
 		self.type = 'WEAK_UNTIL'
 		self.lb, self.ub = lb, ub
 		self.pre = (-1,True)
+		self.preResult = 0
 		self.m_down = 0
 		self.inner_status_stack = []
 		self.input_1.parent = self
@@ -303,11 +306,11 @@ class WEAK_UNTIL(Observer):
 	
 	def record_status(self):
 		super().record_status()
-		self.inner_status_stack.append([self.m_down, self.pre])
+		self.inner_status_stack.append([self.m_down, self.pre, self.preResult])
 
 	def recede_status(self):
 		super().recede_status()
-		self.m_down, self.pre = self.inner_status_stack.pop()
+		self.m_down, self.pre, self.preResult = self.inner_status_stack.pop()
 
 	def run(self):
 		self.record_status()	
@@ -327,8 +330,9 @@ class WEAK_UNTIL(Observer):
 				res = [tau-self.lb,False]
 			elif tau>=self.ub-self.lb+self.m_down:
 				res = [tau-self.ub,True] # The only difference from until
-			if res[0]>=0:
+			if res[0]>=self.preResult:
 				super().write_result(res)
+				self.preResult = res[0]+1
 				logging.debug('%s return: %s',self.type, res)
 			self.pre = (time_stamp_2, verdict_2)
 			isEmpty_1, time_stamp_1, verdict_1 = super().read_next(self.desired_time_stamp)
