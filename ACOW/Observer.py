@@ -9,12 +9,12 @@
 import logging, sys
 
 # use level=logging.DEBUG to enable debug info
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-#logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
+# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
 
 class Observer():
-	def __init__(self, ob1=None, ob2=None, queue_size=2000,name='Default'):
-		self.scq = SCQ(name=name+'_SCQ',size=queue_size)
+	line_cnt = 0 #static var to record line number
+	def __init__(self, ob1=None, ob2=None,name='Default'):		
 		self.name = name
 		self.input_1, self.input_2 = ob1, ob2
 		self.rd_ptr_1, self.rd_ptr_2 = 0, 0
@@ -23,6 +23,18 @@ class Observer():
 		self.return_verdict = True
 		self.has_output = True
 		self.parent = None # This attribute is used for AST optimization
+		self.scq_size = 1
+		self.bcd = 0 # best case delay
+		self.wcd = 0 # worst case delay
+
+	def set_scq_size(self,queue_size):
+		self.scq = SCQ(name=self.name+'_SCQ',size=queue_size)
+
+	def gen_assembly(self, s, substr):
+		self.hook = 's'+str(Observer.line_cnt)
+		s += self.hook+": "+substr+'\n'
+		Observer.line_cnt += 1
+		return s
 
 	def write_result(self,data):
 		self.scq.add(data)
@@ -62,7 +74,11 @@ class ATOM(Observer):
 		res = [time,False] if var[self.name]==0 else [time,True]
 		super().write_result(res)
 		logging.debug('%s %s return: %s',self.type, self.name, res)
-		
+	
+	def gen_assembly(self, s):
+		substr = "load "+self.name
+		s = super().gen_assembly(s, substr)
+		return s
 
 class NEG(Observer):
 	def __init__(self,ob1):
@@ -70,6 +86,12 @@ class NEG(Observer):
 		super().__init__(ob1,name='!')
 		self.type = 'NEG'
 		self.input_1.parent = self
+
+
+	def gen_assembly(self, s):
+		substr = "not "+self.input_1.hook
+		s = super().gen_assembly(s, substr)
+		return s
 
 	def run(self):
 		super().record_status()
@@ -91,6 +113,11 @@ class AND(Observer):
 		self.last_desired_time_stamp = 0
 		self.input_1.parent = self
 		self.input_2.parent = self
+
+	def gen_assembly(self, s):
+		substr = "and "+self.input_1.hook+" "+self.input_1.hook
+		s = super().gen_assembly(s, substr)
+		return s
 
 	def run(self):
 		super().record_status()
@@ -182,6 +209,14 @@ class GLOBAL(Observer):
 		super().recede_status()
 		self.m_up, self.pre = self.inner_status_stack.pop()
 
+	def gen_assembly(self, s):
+		if(self.lb==0):
+			substr = "boxbox "+self.input_1.hook+" "+str(self.ub)
+		else:
+			substr = "boxdot "+self.input_1.hook+" "+str(self.lb)+" "+str(self.ub)
+		s = super().gen_assembly(s, substr)
+		return s
+
 	def run(self):
 		self.record_status()		
 		self.has_output = False
@@ -202,6 +237,7 @@ class GLOBAL(Observer):
 				logging.debug('%s return: %s',self.type, res)
 			self.pre = (time_stamp, verdict)
 			isEmpty, time_stamp, verdict = super().read_next(self.desired_time_stamp)
+
 
 class FUTURE(Observer):
 	def __init__(self,ob1,ub,lb=0):
@@ -255,7 +291,11 @@ class UNTIL(Observer):
 		self.inner_status_stack = []
 		self.input_1.parent = self
 		self.input_2.parent = self
-		
+	
+	def gen_assembly(self, s):
+		substr = "until "+self.input_1.hook+" "+self.input_2.hook+" "+str(self.lb)+" "+str(self.ub)
+		s = super().gen_assembly(s, substr)
+		return s		
 	
 	def record_status(self):
 		super().record_status()

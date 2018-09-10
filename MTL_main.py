@@ -30,8 +30,11 @@ def main():
 	MTL = '(a0 U[2](G[1] a1) )'
 	top_node = parser.parse(MTL)
 	cnt2observer = MTLparse.optimize() # comment this line if you don't want to optimze the AST
-	solution = Search(a,cnt2observer,agent='DES')
-	solution.run(['s0','s0','s0','s1','s1','s1','s1','s1','s1','s1','s3','s2','s2','s3','s2','s3','s3','s3','s3','s2','s2','s3','s3','s3','s3','s0','s1','s1','s1','s0','s0'])
+	SCQ_size, _ = MTLparse.queue_size_assign()
+	MTLparse.gen_assembly()
+
+	# solution = Search(a,cnt2observer,agent='DES')
+	# solution.run(['s0','s0','s0','s1','s1','s1','s1','s1','s1','s1','s3','s2','s2','s3','s2','s3','s3','s3','s3','s2','s2','s3','s3','s3','s3','s0','s1','s1','s1','s0','s0'])
 
 if __name__ == "__main__":
 	main()
