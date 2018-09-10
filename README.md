@@ -19,11 +19,7 @@ conda env create -f environment.yml
 ```bash
 source activate ACOW
 ```
-3) Install graphviz through pip
-```bash
-pip install graphviz
-```
-4) Modefiy the state space model and MTL formula in MTL_main.py. Then run:
+3) Modefiy the state space model and MTL formula in MTL_main.py. Then run:
 ```bash
 python MTL_main.py
 ```

@@ -182,6 +182,7 @@ def queue_size_assign(predLen = 0):
 				n.bcd, n.wcd = left.bcd, left.wcd
 			else:
 				n.bcd, n.wcd = left.bcd + n.lb, left.wcd + n.ub
+
 		visited.add(n)
 
 	def get_total_size(node):

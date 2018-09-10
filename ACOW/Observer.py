@@ -9,13 +9,14 @@
 import logging, sys
 
 # use level=logging.DEBUG to enable debug info
-# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
 
 class Observer():
 	line_cnt = 0 #static var to record line number
 	def __init__(self, ob1=None, ob2=None,name='Default'):		
 		self.name = name
+		self.scq = SCQ(name=self.name+'_SCQ',size=2)
 		self.input_1, self.input_2 = ob1, ob2
 		self.rd_ptr_1, self.rd_ptr_2 = 0, 0
 		self.status_stack = []
@@ -27,7 +28,8 @@ class Observer():
 		self.bcd = 0 # best case delay
 		self.wcd = 0 # worst case delay
 
-	def set_scq_size(self,queue_size):
+
+	def set_scq_size(self,queue_size=1):
 		self.scq = SCQ(name=self.name+'_SCQ',size=queue_size)
 
 	def gen_assembly(self, s, substr):
@@ -382,8 +384,9 @@ class WEAK_UNTIL(Observer):
 #SCQ: Shared Connection Queue
 class SCQ():
 	# Content structure: ([0]:timestamp, [1]:verdict)
-	def __init__(self,name,size):
+	def __init__(self,name,size=1):
 		self.name = name
+		self.size = size
 		self.wr_ptr = 0;
 		#self.queue = [[0 for x in range(2)] for y in range(size)] # revise the queue from list to array to speed up
 		self.queue = [ [0,False] for y in range(size)] # revise the queue from list to array to speed up
@@ -392,32 +395,44 @@ class SCQ():
 		# push data into the SCQ
 		if self.wr_ptr ==0:
 			self.queue[0] = data
-			self.wr_ptr += 1
-		elif self.queue[self.wr_ptr-1][1] != data[1]:
+			self.wr_ptr = self.inc_ptr(self.wr_ptr)
+		elif self.queue[self.dec_ptr(self.wr_ptr)][1] != data[1]:
 			self.queue[self.wr_ptr] = data			
-			self.wr_ptr += 1
+			self.wr_ptr = self.inc_ptr(self.wr_ptr)
 		else:
 			# Aggregation
-			self.queue[self.wr_ptr-1] = data
+			self.queue[self.dec_ptr(self.wr_ptr)] = data
 		#print(self.queue)
+
+	def dec_ptr(self,ptr):
+		if(ptr==0):
+			return self.size-1
+		return ptr-1
+
+	def inc_ptr(self,ptr):
+		if(ptr==self.size-1):
+			return 0
+		return ptr+1
+
 
 	def force_modify(self,data):
 		# modify SCQ content for backtracking
-		if self.wr_ptr > 0:
-			self.queue[self.wr_ptr-1] = data
+		# if self.wr_ptr > 0:
+		# 	self.queue[self.wr_ptr-1] = data
+		self.queue[self.dec_ptr(wr_ptr)] = data # check!
 
 	# Searching for interval that contains info time_stamp >= desired_time_stamp
 	def try_read_and_fetch_data(self,rd_ptr,desired_time_stamp):
-		#logging.debug('SCQ: wr_ptr: %d, rd_ptr: %d, dt: %d',self.wr_ptr,rd_ptr,desired_time_stamp)
+		# logging.debug(self.name+': SCQ: wr_ptr: %d, rd_ptr: %d, dt: %d',self.wr_ptr,rd_ptr,desired_time_stamp)
 		isEmpty = False
 		time_stamp = -1
 		verdict = False
-		while rd_ptr<self.wr_ptr and self.queue[rd_ptr][0]<desired_time_stamp:
-			rd_ptr += 1
+		while rd_ptr!=self.wr_ptr and self.queue[rd_ptr][0]<desired_time_stamp:
+			rd_ptr = self.inc_ptr(rd_ptr)
 		if rd_ptr == self.wr_ptr:
 			isEmpty = True
-			if rd_ptr > 0:
-				rd_ptr -= 1
+			if(self.queue[rd_ptr][0]!=0):
+				rd_ptr = self.dec_ptr(rd_ptr)
 		else:
 			time_stamp, verdict = self.queue[rd_ptr]
 		return isEmpty,time_stamp,verdict
